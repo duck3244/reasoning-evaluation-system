@@ -5,11 +5,11 @@ import json
 import logging
 from typing import Dict, Any
 
-from database_config import DatabaseConfig, DatabaseManager, load_db_config_from_file
-from data_collector import ReasoningDatasetCollector
-from sample_data_generator import SampleDataGenerator
-from external_data_loader import ExternalDatasetLoader
-from evaluation_system import ReasoningEvaluator, dummy_model_simple, dummy_model_random
+from core.database_config import DatabaseConfig, DatabaseManager, load_db_config_from_file
+from core.data_collector import ReasoningDatasetCollector
+from data_loaders.sample_data_generator import SampleDataGenerator
+from data_loaders.external_data_loader import ExternalDatasetLoader
+from evaluation.evaluation_system import ReasoningEvaluator, dummy_model_simple
 
 # 로깅 설정
 logging.basicConfig(

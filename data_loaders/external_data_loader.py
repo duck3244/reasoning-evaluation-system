@@ -2,12 +2,11 @@
 외부 데이터셋 로더 (완전 구현)
 """
 import requests
-import json
 from typing import List, Dict, Any, Optional
 import logging
 import time
-from data_models import ReasoningDataPoint
-from data_collector import ReasoningDatasetCollector
+from core.data_models import ReasoningDataPoint
+from core.data_collector import ReasoningDatasetCollector
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +166,7 @@ class ExternalDatasetLoader:
             return False
 
         # 카테고리 유효성 확인
-        from data_models import Constants
+        from core.data_models import Constants
         if problem.category not in Constants.CATEGORIES:
             problem.category = 'unknown'
 
@@ -283,7 +282,7 @@ class ExternalDatasetLoader:
 
         # 카테고리 검증
         if 'category' in data:
-            from data_models import Constants
+            from core.data_models import Constants
             if data['category'] not in Constants.CATEGORIES:
                 logger.warning(f"알 수 없는 카테고리: {data['category']}")
                 # 유효하지 않은 카테고리는 'unknown'으로 설정
@@ -291,7 +290,7 @@ class ExternalDatasetLoader:
 
         # 난이도 검증
         if 'difficulty' in data:
-            from data_models import Constants
+            from core.data_models import Constants
             if data['difficulty'] not in Constants.DIFFICULTIES:
                 logger.warning(f"알 수 없는 난이도: {data['difficulty']}")
                 # 유효하지 않은 난이도는 'medium'으로 설정

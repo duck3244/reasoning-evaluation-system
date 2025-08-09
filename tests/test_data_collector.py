@@ -2,12 +2,10 @@
 데이터 컬렉터 단위 테스트
 """
 import unittest
-from unittest.mock import Mock, patch, MagicMock
-import json
-from datetime import datetime
+from unittest.mock import Mock, patch
 
-from data_collector import ReasoningDatasetCollector
-from data_models import ReasoningDataPoint, Constants
+from core.data_collector import ReasoningDatasetCollector
+from core.data_models import ReasoningDataPoint
 
 
 class TestReasoningDatasetCollector(unittest.TestCase):
@@ -511,7 +509,7 @@ class TestReasoningDatasetCollector(unittest.TestCase):
 
     def test_save_statistics(self):
         """통계 저장 테스트"""
-        from data_models import DatasetStatistics
+        from core.data_models import DatasetStatistics
 
         # Mock 설정
         self.mock_db_manager.execute_dml.return_value = 1
@@ -675,7 +673,7 @@ class TestBatchProcessor(unittest.TestCase):
 
     def setUp(self):
         """테스트 설정"""
-        from data_collector import BatchProcessor
+        from core.data_collector import BatchProcessor
         self.batch_processor = BatchProcessor(batch_size=3)
 
     def test_process_in_batches_success(self):

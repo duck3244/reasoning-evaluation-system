@@ -3,8 +3,8 @@
 """
 from typing import List
 import logging
-from data_models import ReasoningDataPoint
-from data_collector import ReasoningDatasetCollector
+from core.data_models import ReasoningDataPoint
+from core.data_collector import ReasoningDatasetCollector
 
 logger = logging.getLogger(__name__)
 

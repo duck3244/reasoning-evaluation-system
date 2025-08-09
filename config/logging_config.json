@@ -1,0 +1,8 @@
+{
+  "log_level": "INFO",
+  "log_format": "structured",
+  "log_file": "logs/application.log",
+  "enable_console": true,
+  "max_file_size_mb": 10,
+  "backup_count": 5
+}

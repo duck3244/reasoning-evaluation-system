@@ -7,12 +7,12 @@ import os
 import json
 from unittest.mock import patch, MagicMock
 
-from database_config import DatabaseConfig, DatabaseManager
-from data_collector import ReasoningDatasetCollector
-from evaluation_system import ReasoningEvaluator
-from external_data_loader import ExternalDatasetLoader
+from core.database_config import DatabaseConfig, DatabaseManager
+from core.data_collector import ReasoningDatasetCollector
+from evaluation.evaluation_system import ReasoningEvaluator
+from data_loaders.external_data_loader import ExternalDatasetLoader
 from main import ReasoningEvaluationSystem
-from data_models import ReasoningDataPoint
+from core.data_models import ReasoningDataPoint
 
 
 class TestSystemIntegration(unittest.TestCase):
@@ -206,7 +206,7 @@ class TestSystemIntegration(unittest.TestCase):
         with patch('database_config.load_db_config_from_file') as mock_load:
             mock_load.return_value = self.mock_db_config
 
-            from database_config import load_db_config_from_file
+            from core.database_config import load_db_config_from_file
             config = load_db_config_from_file(config_file)
 
             self.assertIsInstance(config, DatabaseConfig)
@@ -214,7 +214,7 @@ class TestSystemIntegration(unittest.TestCase):
     def test_performance_monitoring(self):
         """성능 모니터링 테스트"""
         with patch('database_config.DatabaseManager', return_value=self.mock_db_manager):
-            from performance_optimizer import performance_monitor
+            from core.performance_optimizer import performance_monitor
 
             # 성능 모니터링 데코레이터 테스트
             @performance_monitor()
@@ -352,7 +352,7 @@ class TestDataValidation(unittest.TestCase):
 
     def test_data_point_validation(self):
         """데이터 포인트 검증 테스트"""
-        from data_models import ReasoningDataPoint, Constants
+        from core.data_models import ReasoningDataPoint, Constants
 
         # 유효한 데이터
         valid_data = ReasoningDataPoint(
@@ -386,7 +386,7 @@ class TestDataValidation(unittest.TestCase):
 
     def test_json_serialization(self):
         """JSON 직렬화 테스트"""
-        from data_models import ReasoningDataPoint
+        from core.data_models import ReasoningDataPoint
 
         data = ReasoningDataPoint(
             id="test_001",
@@ -411,7 +411,7 @@ class TestDataValidation(unittest.TestCase):
 
     def test_category_validation(self):
         """카테고리 유효성 검증 테스트"""
-        from data_models import Constants
+        from core.data_models import Constants
 
         # 모든 유효한 카테고리 테스트
         for category in Constants.CATEGORIES:
@@ -426,7 +426,7 @@ class TestDataValidation(unittest.TestCase):
 
     def test_difficulty_validation(self):
         """난이도 유효성 검증 테스트"""
-        from data_models import Constants
+        from core.data_models import Constants
 
         # 모든 유효한 난이도 테스트
         for difficulty in Constants.DIFFICULTIES:
@@ -450,7 +450,7 @@ class TestPerformanceIntegration(unittest.TestCase):
 
     def test_large_batch_processing(self):
         """대용량 배치 처리 성능 테스트"""
-        from performance_optimizer import BatchOptimizer
+        from core.performance_optimizer import BatchOptimizer
 
         optimizer = BatchOptimizer()
 
@@ -477,7 +477,7 @@ class TestPerformanceIntegration(unittest.TestCase):
 
     def test_memory_optimization(self):
         """메모리 최적화 테스트"""
-        from performance_optimizer import MemoryManager
+        from core.performance_optimizer import MemoryManager
 
         memory_manager = MemoryManager()
 
@@ -498,7 +498,7 @@ class TestPerformanceIntegration(unittest.TestCase):
 
     def test_query_optimization(self):
         """쿼리 최적화 테스트"""
-        from performance_optimizer import QueryOptimizer
+        from core.performance_optimizer import QueryOptimizer
 
         optimizer = QueryOptimizer(self.mock_db_manager)
 
@@ -517,7 +517,7 @@ class TestPerformanceIntegration(unittest.TestCase):
 
     def test_concurrent_performance(self):
         """동시성 성능 테스트"""
-        from performance_optimizer import ParallelProcessor
+        from core.performance_optimizer import ParallelProcessor
 
         processor = ParallelProcessor(max_workers=2)
 
@@ -556,7 +556,7 @@ class TestLoggingIntegration(unittest.TestCase):
 
     def test_structured_logging(self):
         """구조화된 로깅 테스트"""
-        from logging_system import LoggingManager, LogContext
+        from monitoring.logging_system import LoggingManager, LogContext
 
         # 로깅 매니저 설정
         logging_manager = LoggingManager(
@@ -588,7 +588,7 @@ class TestLoggingIntegration(unittest.TestCase):
 
     def test_performance_logging(self):
         """성능 로깅 테스트"""
-        from logging_system import log_performance, LoggingManager
+        from monitoring.logging_system import log_performance, LoggingManager
 
         # 로깅 매니저 설정
         LoggingManager(
@@ -616,7 +616,7 @@ class TestLoggingIntegration(unittest.TestCase):
 
     def test_log_analysis(self):
         """로그 분석 테스트"""
-        from logging_system import LogAnalyzer, LoggingManager
+        from monitoring.logging_system import LogAnalyzer, LoggingManager
 
         # 테스트 로그 생성
         LoggingManager(
@@ -664,7 +664,7 @@ class TestEndToEndScenario(unittest.TestCase):
         """완전한 평가 워크플로우 테스트"""
         with patch('database_config.DatabaseManager', return_value=self.mock_db_manager):
             from main import ReasoningEvaluationSystem
-            from database_config import DatabaseConfig
+            from core.database_config import DatabaseConfig
 
             # 1. 시스템 초기화
             db_config = DatabaseConfig("test", "test", "test:1521/test")
@@ -714,7 +714,7 @@ class TestEndToEndScenario(unittest.TestCase):
     def test_data_lifecycle_management(self):
         """데이터 생명주기 관리 테스트"""
         with patch('database_config.DatabaseManager', return_value=self.mock_db_manager):
-            from data_collector import ReasoningDatasetCollector
+            from core.data_collector import ReasoningDatasetCollector
 
             collector = ReasoningDatasetCollector(self.mock_db_manager)
 
@@ -760,8 +760,8 @@ class TestEndToEndScenario(unittest.TestCase):
     def test_system_stress_simulation(self):
         """시스템 스트레스 시뮬레이션"""
         with patch('database_config.DatabaseManager', return_value=self.mock_db_manager):
-            from data_collector import ReasoningDatasetCollector
-            from performance_optimizer import OptimizedDataProcessor
+            from core.data_collector import ReasoningDatasetCollector
+            from core.performance_optimizer import OptimizedDataProcessor
 
             collector = ReasoningDatasetCollector(self.mock_db_manager)
             optimizer = OptimizedDataProcessor(self.mock_db_manager)

@@ -1,0 +1,8 @@
+{
+  "username": "your_username",
+  "password": "your_password",
+  "dsn": "localhost:1521/XE",
+  "pool_min": 1,
+  "pool_max": 10,
+  "pool_increment": 1
+}
