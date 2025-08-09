@@ -1,0 +1,112 @@
+graph TB
+    subgraph "LLM 추론 성능 평가 시스템"
+        subgraph "데이터 관리"
+            UC1[데이터 수집]
+            UC2[샘플 데이터 생성]
+            UC3[외부 데이터셋 로드]
+            UC4[데이터 내보내기]
+            UC5[데이터 가져오기]
+            UC6[데이터 검증]
+        end
+
+        subgraph "평가 관리"
+            UC7[평가 데이터셋 생성]
+            UC8[모델 평가 실행]
+            UC9[평가 결과 저장]
+            UC10[성능 통계 계산]
+            UC11[모델 성능 비교]
+            UC12[평가 메트릭 분석]
+        end
+
+        subgraph "시스템 관리"
+            UC13[데이터베이스 초기화]
+            UC14[시스템 설정 관리]
+            UC15[연결 풀 관리]
+            UC16[로그 관리]
+            UC17[백업 및 복원]
+        end
+
+        subgraph "보고 및 분석"
+            UC18[통계 보고서 생성]
+            UC19[성능 대시보드]
+            UC20[카테고리별 분석]
+            UC21[난이도별 분석]
+            UC22[트렌드 분석]
+        end
+    end
+
+    %% 액터 정의
+    RESEARCHER[연구자<br/>Researcher]
+    DATA_SCIENTIST[데이터 과학자<br/>Data Scientist]
+    ML_ENGINEER[ML 엔지니어<br/>ML Engineer]
+    SYSTEM_ADMIN[시스템 관리자<br/>System Admin]
+    API_USER[API 사용자<br/>API User]
+
+    %% 연구자 유스케이스
+    RESEARCHER --> UC1
+    RESEARCHER --> UC2
+    RESEARCHER --> UC7
+    RESEARCHER --> UC8
+    RESEARCHER --> UC18
+    RESEARCHER --> UC20
+    RESEARCHER --> UC21
+
+    %% 데이터 과학자 유스케이스
+    DATA_SCIENTIST --> UC3
+    DATA_SCIENTIST --> UC4
+    DATA_SCIENTIST --> UC5
+    DATA_SCIENTIST --> UC10
+    DATA_SCIENTIST --> UC11
+    DATA_SCIENTIST --> UC12
+    DATA_SCIENTIST --> UC19
+    DATA_SCIENTIST --> UC22
+
+    %% ML 엔지니어 유스케이스
+    ML_ENGINEER --> UC8
+    ML_ENGINEER --> UC9
+    ML_ENGINEER --> UC11
+    ML_ENGINEER --> UC6
+    ML_ENGINEER --> UC12
+
+    %% 시스템 관리자 유스케이스
+    SYSTEM_ADMIN --> UC13
+    SYSTEM_ADMIN --> UC14
+    SYSTEM_ADMIN --> UC15
+    SYSTEM_ADMIN --> UC16
+    SYSTEM_ADMIN --> UC17
+
+    %% API 사용자 유스케이스
+    API_USER --> UC3
+    API_USER --> UC8
+    API_USER --> UC10
+
+    %% Include 관계
+    UC8 -.->|include| UC7
+    UC8 -.->|include| UC9
+    UC10 -.->|include| UC9
+    UC11 -.->|include| UC10
+    UC18 -.->|include| UC10
+    UC19 -.->|include| UC10
+    UC20 -.->|include| UC10
+    UC21 -.->|include| UC10
+
+    %% Extend 관계
+    UC6 -.->|extend| UC1
+    UC6 -.->|extend| UC3
+    UC6 -.->|extend| UC5
+    UC17 -.->|extend| UC13
+    UC22 -.->|extend| UC19
+
+    %% 스타일링
+    classDef actor fill:#ffeb3b,stroke:#333,stroke-width:2px
+    classDef usecase fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef dataUC fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
+    classDef evalUC fill:#fce4ec,stroke:#e91e63,stroke-width:2px
+    classDef systemUC fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    classDef reportUC fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+
+    class RESEARCHER,DATA_SCIENTIST,ML_ENGINEER,SYSTEM_ADMIN,API_USER actor
+    class UC1,UC2,UC3,UC4,UC5,UC6 dataUC
+    class UC7,UC8,UC9,UC10,UC11,UC12 evalUC
+    class UC13,UC14,UC15,UC16,UC17 systemUC
+    class UC18,UC19,UC20,UC21,UC22 reportUC

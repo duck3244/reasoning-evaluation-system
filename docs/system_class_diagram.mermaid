@@ -1,0 +1,185 @@
+classDiagram
+    %% 데이터 모델 클래스들
+    class ReasoningDataPoint {
+        +String id
+        +String category
+        +String difficulty
+        +String question
+        +String correct_answer
+        +String explanation
+        +List~String~ options
+        +String source
+        +String created_at
+        +String updated_at
+        +Dict metadata
+        +generate_id() String
+        +to_dict() Dict
+        +to_json() String
+        +from_dict(data) ReasoningDataPoint
+        +from_json(json_str) ReasoningDataPoint
+    }
+
+    class EvaluationResult {
+        +String id
+        +String data_point_id
+        +String model_name
+        +String predicted_answer
+        +Boolean is_correct
+        +Float confidence_score
+        +List~String~ reasoning_steps
+        +Float execution_time
+        +String created_at
+        +Dict metadata
+    }
+
+    class DatasetStatistics {
+        +Integer total_count
+        +Dict category_counts
+        +Dict difficulty_counts
+        +Dict source_counts
+        +String created_at
+    }
+
+    class Constants {
+        +List~String~ CATEGORIES
+        +List~String~ DIFFICULTIES
+        +List~String~ SOURCES
+        +String TABLE_REASONING_DATA
+        +String TABLE_EVALUATION_RESULTS
+        +String TABLE_DATASET_STATS
+    }
+
+    %% 데이터베이스 관련 클래스들
+    class DatabaseConfig {
+        +String username
+        +String password
+        +String dsn
+        +Integer pool_min
+        +Integer pool_max
+        +Integer pool_increment
+        +ConnectionPool pool
+        +create_pool() void
+        +close_pool() void
+        +get_connection() Connection
+    }
+
+    class DatabaseManager {
+        +DatabaseConfig db_config
+        +__init__(db_config)
+        +init_database() void
+        +_create_reasoning_data_table(cursor) void
+        +_create_evaluation_results_table(cursor) void
+        +_create_statistics_table(cursor) void
+        +_create_indexes(cursor) void
+        +_create_sequences(cursor) void
+        +execute_query(sql, params) List~tuple~
+        +execute_dml(sql, params) Integer
+        +execute_batch_dml(sql, params_list) Integer
+    }
+
+    %% 데이터 수집 관련 클래스들
+    class ReasoningDatasetCollector {
+        +DatabaseManager db_manager
+        +__init__(db_manager)
+        +add_data_point(data_point) Boolean
+        +add_batch_data_points(data_points) Integer
+        +get_data(category, difficulty, source, limit, offset) List~ReasoningDataPoint~
+        +get_data_by_id(data_id) ReasoningDataPoint
+        +delete_data_point(data_id) Boolean
+        +get_statistics() DatasetStatistics
+        +save_statistics(stats) Boolean
+        +load_from_json(file_path) Integer
+        +load_from_csv(file_path) Integer
+        +export_to_json(file_path, category) Boolean
+        +export_to_csv(file_path, category) Boolean
+    }
+
+    class SampleDataGenerator {
+        +ReasoningDatasetCollector collector
+        +__init__(collector)
+        +generate_math_problems() List~ReasoningDataPoint~
+        +generate_logic_problems() List~ReasoningDataPoint~
+        +generate_reading_comprehension_problems() List~ReasoningDataPoint~
+        +generate_common_sense_problems() List~ReasoningDataPoint~
+        +generate_science_problems() List~ReasoningDataPoint~
+        +add_all_sample_data() Integer
+        +create_custom_problem(...) ReasoningDataPoint
+    }
+
+    class ExternalDatasetLoader {
+        +ReasoningDatasetCollector collector
+        +__init__(collector)
+        +load_gsm8k_sample() Integer
+        +load_arc_sample() Integer
+        +load_hellaswag_sample() Integer
+        +load_korean_datasets() Integer
+        +load_from_huggingface_format(dataset_name, data_list) Integer
+        +load_from_custom_api(api_url, api_key, headers) Integer
+        +load_from_json_file(file_path, source_name) Integer
+        +load_all_samples() Dict~String, Integer~
+        +validate_data_format(data) Boolean
+    }
+
+    %% 평가 시스템 클래스들
+    class ReasoningEvaluator {
+        +DatabaseManager db_manager
+        +ReasoningDatasetCollector collector
+        +__init__(db_manager, collector)
+        +create_evaluation_set(test_size, balance_categories, balance_difficulties) List~ReasoningDataPoint~
+        +evaluate_model(model_name, evaluation_set, model_function, save_results) Dict
+        +_create_prompt(data_point) String
+        +_check_answer(predicted, correct, category) Boolean
+        +_check_math_answer(predicted, correct) Boolean
+        +_check_logic_answer(predicted, correct) Boolean
+        +_save_evaluation_results(results) Boolean
+        +_calculate_statistics(results, total_time) Dict
+        +get_model_performance(model_name) Dict
+        +compare_models(model_names) Dict
+        +save_evaluation_format(output_path, test_size, format_type) Integer
+    }
+
+    %% 메인 시스템 클래스
+    class ReasoningEvaluationSystem {
+        +DatabaseConfig db_config
+        +DatabaseManager db_manager
+        +ReasoningDatasetCollector collector
+        +SampleDataGenerator sample_generator
+        +ExternalDatasetLoader external_loader
+        +ReasoningEvaluator evaluator
+        +__init__(db_config)
+        +setup_database() void
+        +load_sample_data() Dict~String, Integer~
+        +run_evaluation(model_name, test_size) Dict
+        +get_system_statistics() Dict
+        +export_data(category, format_type) Boolean
+        +import_data(file_path, format_type) Integer
+        +cleanup() void
+    }
+
+    %% 관계 정의
+    DatabaseManager --> DatabaseConfig : uses
+    ReasoningDatasetCollector --> DatabaseManager : uses
+    ReasoningDatasetCollector --> ReasoningDataPoint : manages
+    ReasoningDatasetCollector --> DatasetStatistics : creates
+    
+    SampleDataGenerator --> ReasoningDatasetCollector : uses
+    SampleDataGenerator --> ReasoningDataPoint : creates
+    
+    ExternalDatasetLoader --> ReasoningDatasetCollector : uses
+    ExternalDatasetLoader --> ReasoningDataPoint : creates
+    
+    ReasoningEvaluator --> DatabaseManager : uses
+    ReasoningEvaluator --> ReasoningDatasetCollector : uses
+    ReasoningEvaluator --> ReasoningDataPoint : evaluates
+    ReasoningEvaluator --> EvaluationResult : creates
+    
+    ReasoningEvaluationSystem --> DatabaseConfig : uses
+    ReasoningEvaluationSystem --> DatabaseManager : contains
+    ReasoningEvaluationSystem --> ReasoningDatasetCollector : contains
+    ReasoningEvaluationSystem --> SampleDataGenerator : contains
+    ReasoningEvaluationSystem --> ExternalDatasetLoader : contains
+    ReasoningEvaluationSystem --> ReasoningEvaluator : contains
+    
+    ReasoningDataPoint --> Constants : uses
+    EvaluationResult --> Constants : uses
+    DatasetStatistics --> Constants : uses

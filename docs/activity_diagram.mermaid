@@ -1,0 +1,116 @@
+flowchart TD
+    START([시작]) --> INIT_CHECK{시스템 초기화<br/>확인}
+    
+    INIT_CHECK -->|미초기화| SETUP_DB[데이터베이스<br/>초기화]
+    INIT_CHECK -->|초기화됨| LOAD_CONFIG[설정 파일<br/>로드]
+    
+    SETUP_DB --> CREATE_TABLES[테이블 생성]
+    CREATE_TABLES --> CREATE_INDEXES[인덱스 생성]
+    CREATE_INDEXES --> LOAD_CONFIG
+    
+    LOAD_CONFIG --> CHECK_DATA{데이터 존재<br/>확인}
+    
+    CHECK_DATA -->|데이터 없음| LOAD_SAMPLE[샘플 데이터<br/>로드]
+    CHECK_DATA -->|데이터 있음| CREATE_EVAL_SET[평가 데이터셋<br/>생성]
+    
+    LOAD_SAMPLE --> GENERATE_BASIC[기본 샘플<br/>생성]
+    GENERATE_BASIC --> GENERATE_MATH[수학 문제<br/>생성]
+    GENERATE_MATH --> GENERATE_LOGIC[논리 문제<br/>생성]
+    GENERATE_LOGIC --> GENERATE_RC[독해 문제<br/>생성]
+    GENERATE_RC --> GENERATE_SCIENCE[과학 문제<br/>생성]
+    GENERATE_SCIENCE --> LOAD_EXTERNAL[외부 데이터<br/>로드]
+    
+    LOAD_EXTERNAL --> LOAD_GSM8K[GSM8K<br/>샘플 로드]
+    LOAD_GSM8K --> LOAD_ARC[ARC<br/>샘플 로드]
+    LOAD_ARC --> LOAD_KOREAN[한국어 데이터<br/>로드]
+    LOAD_KOREAN --> SAVE_TO_DB[데이터베이스<br/>저장]
+    
+    SAVE_TO_DB --> CREATE_EVAL_SET
+    
+    CREATE_EVAL_SET --> BALANCE_CHECK{균형 맞춤<br/>필요?}
+    BALANCE_CHECK -->|예| BALANCE_CATEGORY[카테고리별<br/>균등 선택]
+    BALANCE_CHECK -->|아니오| SELECT_DATA[데이터 선택]
+    
+    BALANCE_CATEGORY --> BALANCE_DIFFICULTY[난이도별<br/>균등 선택]
+    BALANCE_DIFFICULTY --> SELECT_DATA
+    
+    SELECT_DATA --> VALIDATE_SET{데이터셋<br/>검증}
+    VALIDATE_SET -->|검증 실패| ERROR_HANDLING[오류 처리]
+    VALIDATE_SET -->|검증 성공| START_EVAL[평가 시작]
+    
+    ERROR_HANDLING --> LOG_ERROR[오류 로그<br/>기록]
+    LOG_ERROR --> END_ERROR([오류 종료])
+    
+    START_EVAL --> INIT_RESULTS[결과 저장소<br/>초기화]
+    INIT_RESULTS --> EVAL_LOOP{문제별<br/>평가 루프}
+    
+    EVAL_LOOP --> GET_PROBLEM[문제 가져오기]
+    GET_PROBLEM --> CREATE_PROMPT[프롬프트<br/>생성]
+    CREATE_PROMPT --> CALL_MODEL[모델 호출]
+    
+    CALL_MODEL --> MEASURE_TIME[실행 시간<br/>측정]
+    MEASURE_TIME --> GET_RESPONSE[응답 받기]
+    GET_RESPONSE --> CHECK_ANSWER[정답 확인]
+    
+    CHECK_ANSWER --> MATH_CHECK{수학 문제?}
+    MATH_CHECK -->|예| MATH_VALIDATION[수학 답안<br/>검증]
+    MATH_CHECK -->|아니오| LOGIC_CHECK{논리 문제?}
+    
+    LOGIC_CHECK -->|예| LOGIC_VALIDATION[논리 답안<br/>검증]
+    LOGIC_CHECK -->|아니오| GENERAL_VALIDATION[일반 답안<br/>검증]
+    
+    MATH_VALIDATION --> CREATE_RESULT[평가 결과<br/>객체 생성]
+    LOGIC_VALIDATION --> CREATE_RESULT
+    GENERAL_VALIDATION --> CREATE_RESULT
+    
+    CREATE_RESULT --> SAVE_RESULT[결과 저장]
+    SAVE_RESULT --> UPDATE_PROGRESS[진행률<br/>업데이트]
+    UPDATE_PROGRESS --> MORE_PROBLEMS{남은 문제<br/>있음?}
+    
+    MORE_PROBLEMS -->|예| EVAL_LOOP
+    MORE_PROBLEMS -->|아니오| CALC_STATS[통계 계산]
+    
+    CALC_STATS --> CALC_ACCURACY[정확도 계산]
+    CALC_ACCURACY --> CALC_CATEGORY_STATS[카테고리별<br/>통계 계산]
+    CALC_CATEGORY_STATS --> CALC_DIFFICULTY_STATS[난이도별<br/>통계 계산]
+    CALC_DIFFICULTY_STATS --> CALC_TIME_STATS[시간 통계<br/>계산]
+    
+    CALC_TIME_STATS --> SAVE_STATS[통계 저장]
+    SAVE_STATS --> GENERATE_REPORT[보고서 생성]
+    GENERATE_REPORT --> EXPORT_RESULTS[결과 내보내기]
+    
+    EXPORT_RESULTS --> EXPORT_FORMAT{내보내기<br/>형식 선택}
+    EXPORT_FORMAT -->|JSON| EXPORT_JSON[JSON으로<br/>내보내기]
+    EXPORT_FORMAT -->|CSV| EXPORT_CSV[CSV로<br/>내보내기]
+    
+    EXPORT_JSON --> CLEANUP[리소스<br/>정리]
+    EXPORT_CSV --> CLEANUP
+    
+    CLEANUP --> CLOSE_DB[DB 연결<br/>종료]
+    CLOSE_DB --> LOG_COMPLETION[완료 로그<br/>기록]
+    LOG_COMPLETION --> END([평가 완료])
+
+    %% 병렬 처리 브랜치
+    CALL_MODEL --> PARALLEL_START{{병렬 처리<br/>시작}}
+    PARALLEL_START --> MODEL_A[모델 A<br/>호출]
+    PARALLEL_START --> MODEL_B[모델 B<br/>호출]
+    PARALLEL_START --> MODEL_C[모델 C<br/>호출]
+    
+    MODEL_A --> PARALLEL_END{{병렬 처리<br/>종료}}
+    MODEL_B --> PARALLEL_END
+    MODEL_C --> PARALLEL_END
+    
+    PARALLEL_END --> MEASURE_TIME
+
+    %% 스타일링
+    classDef startEnd fill:#4caf50,stroke:#333,stroke-width:2px,color:#fff
+    classDef process fill:#2196f3,stroke:#333,stroke-width:2px,color:#fff
+    classDef decision fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
+    classDef error fill:#f44336,stroke:#333,stroke-width:2px,color:#fff
+    classDef parallel fill:#9c27b0,stroke:#333,stroke-width:2px,color:#fff
+
+    class START,END,END_ERROR startEnd
+    class SETUP_DB,CREATE_TABLES,CREATE_INDEXES,LOAD_CONFIG,LOAD_SAMPLE,GENERATE_BASIC,GENERATE_MATH,GENERATE_LOGIC,GENERATE_RC,GENERATE_SCIENCE,LOAD_EXTERNAL,LOAD_GSM8K,LOAD_ARC,LOAD_KOREAN,SAVE_TO_DB,CREATE_EVAL_SET,BALANCE_CATEGORY,BALANCE_DIFFICULTY,SELECT_DATA,START_EVAL,INIT_RESULTS,GET_PROBLEM,CREATE_PROMPT,CALL_MODEL,MEASURE_TIME,GET_RESPONSE,CHECK_ANSWER,MATH_VALIDATION,LOGIC_VALIDATION,GENERAL_VALIDATION,CREATE_RESULT,SAVE_RESULT,UPDATE_PROGRESS,CALC_STATS,CALC_ACCURACY,CALC_CATEGORY_STATS,CALC_DIFFICULTY_STATS,CALC_TIME_STATS,SAVE_STATS,GENERATE_REPORT,EXPORT_RESULTS,EXPORT_JSON,EXPORT_CSV,CLEANUP,CLOSE_DB,LOG_COMPLETION process
+    class INIT_CHECK,CHECK_DATA,BALANCE_CHECK,VALIDATE_SET,EVAL_LOOP,MATH_CHECK,LOGIC_CHECK,MORE_PROBLEMS,EXPORT_FORMAT decision
+    class ERROR_HANDLING,LOG_ERROR error
+    class PARALLEL_START,PARALLEL_END,MODEL_A,MODEL_B,MODEL_C parallel

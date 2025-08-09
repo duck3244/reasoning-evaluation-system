@@ -1,0 +1,5 @@
+# requirements.txt
+oracledb>=1.4.0
+requests>=2.31.0
+datasets>=2.14.0  # Hugging Face datasets (선택적)
+pandas>=2.0.0     # 데이터 처리용 (선택적)

@@ -1,0 +1,97 @@
+sequenceDiagram
+    participant User
+    participant Main as ReasoningEvaluationSystem
+    participant DB as DatabaseManager
+    participant Collector as ReasoningDatasetCollector
+    participant SampleGen as SampleDataGenerator
+    participant ExtLoader as ExternalDatasetLoader
+    participant Evaluator as ReasoningEvaluator
+    participant Oracle as Oracle Database
+
+    Note over User, Oracle: 시스템 초기화 및 데이터 준비 단계
+    
+    User->>Main: 시스템 시작
+    Main->>DB: init_database()
+    DB->>Oracle: CREATE TABLE IF NOT EXISTS...
+    Oracle-->>DB: 테이블 생성 완료
+    DB-->>Main: 데이터베이스 초기화 완료
+
+    Main->>SampleGen: add_all_sample_data()
+    SampleGen->>SampleGen: generate_math_problems()
+    SampleGen->>SampleGen: generate_logic_problems()
+    SampleGen->>SampleGen: generate_reading_comprehension_problems()
+    SampleGen->>Collector: add_batch_data_points(problems)
+    Collector->>DB: execute_batch_dml(INSERT...)
+    DB->>Oracle: INSERT INTO REASONING_DATA...
+    Oracle-->>DB: 삽입 완료
+    DB-->>Collector: rowcount
+    Collector-->>SampleGen: count
+    SampleGen-->>Main: 샘플 데이터 추가 완료
+
+    Main->>ExtLoader: load_all_samples()
+    ExtLoader->>ExtLoader: load_gsm8k_sample()
+    ExtLoader->>ExtLoader: load_korean_datasets()
+    ExtLoader->>Collector: add_batch_data_points(external_problems)
+    Collector->>DB: execute_batch_dml(INSERT...)
+    DB->>Oracle: INSERT INTO REASONING_DATA...
+    Oracle-->>DB: 삽입 완료
+    DB-->>Collector: rowcount
+    Collector-->>ExtLoader: count
+    ExtLoader-->>Main: 외부 데이터 로드 완료
+
+    Note over User, Oracle: 모델 평가 실행 단계
+
+    User->>Main: run_evaluation(model_name, test_size)
+    Main->>Evaluator: create_evaluation_set(test_size)
+    Evaluator->>Collector: get_data(category, difficulty, limit)
+    Collector->>DB: execute_query(SELECT...)
+    DB->>Oracle: SELECT * FROM REASONING_DATA...
+    Oracle-->>DB: 결과 반환
+    DB-->>Collector: rows
+    Collector->>Collector: rows를 ReasoningDataPoint 객체로 변환
+    Collector-->>Evaluator: evaluation_set
+    Evaluator-->>Main: 평가 데이터셋 생성 완료
+
+    Main->>Evaluator: evaluate_model(model_name, evaluation_set, model_function)
+    
+    loop 각 문제에 대해
+        Evaluator->>Evaluator: _create_prompt(data_point)
+        Evaluator->>Evaluator: model_function(prompt) - 모델 호출
+        Evaluator->>Evaluator: _check_answer(predicted, correct)
+        Evaluator->>Evaluator: EvaluationResult 생성
+    end
+
+    Evaluator->>Evaluator: _calculate_statistics(results)
+    Evaluator->>DB: execute_batch_dml(INSERT INTO EVALUATION_RESULTS...)
+    DB->>Oracle: INSERT INTO EVALUATION_RESULTS...
+    Oracle-->>DB: 삽입 완료
+    DB-->>Evaluator: 평가 결과 저장 완료
+    Evaluator-->>Main: evaluation_statistics
+
+    Note over User, Oracle: 결과 조회 및 내보내기 단계
+
+    Main->>Main: get_system_statistics()
+    Main->>Collector: get_statistics()
+    Collector->>DB: execute_query(SELECT COUNT(*)...)
+    DB->>Oracle: 통계 쿼리 실행
+    Oracle-->>DB: 통계 결과
+    DB-->>Collector: statistics_data
+    Collector-->>Main: DatasetStatistics
+
+    Main->>Evaluator: get_model_performance(model_name)
+    Evaluator->>DB: execute_query(SELECT ... FROM EVALUATION_RESULTS...)
+    DB->>Oracle: 성능 쿼리 실행
+    Oracle-->>DB: 성능 데이터
+    DB-->>Evaluator: performance_data
+    Evaluator-->>Main: model_performance
+
+    Main->>Collector: export_to_json(filename, category)
+    Collector->>Collector: get_data(category)
+    Collector->>DB: execute_query(SELECT...)
+    DB->>Oracle: SELECT * FROM REASONING_DATA...
+    Oracle-->>DB: 데이터 반환
+    DB-->>Collector: export_data
+    Collector->>Collector: JSON 파일 생성
+    Collector-->>Main: 내보내기 완료
+
+    Main-->>User: 평가 완료 및 결과 반환

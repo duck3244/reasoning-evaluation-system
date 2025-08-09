@@ -1,0 +1,135 @@
+graph TB
+    subgraph "LLM 추론 성능 평가 시스템"
+        subgraph "프레젠테이션 계층"
+            MAIN[Main Interface<br/>main.py]
+            CLI[Command Line Interface]
+            CONFIG[Configuration Manager<br/>db_config.json]
+        end
+
+        subgraph "비즈니스 로직 계층"
+            subgraph "데이터 관리 모듈"
+                COLLECTOR[Data Collector<br/>data_collector.py]
+                SAMPLE_GEN[Sample Data Generator<br/>sample_data_generator.py]
+                EXT_LOADER[External Data Loader<br/>external_data_loader.py]
+            end
+
+            subgraph "평가 모듈"
+                EVALUATOR[Reasoning Evaluator<br/>evaluation_system.py]
+                METRICS[Performance Metrics]
+                VALIDATOR[Answer Validator]
+            end
+
+            subgraph "모델 관리"
+                MODEL_INTERFACE[Model Interface]
+                CUSTOM_MODELS[Custom Models]
+                API_MODELS[API Models]
+            end
+        end
+
+        subgraph "데이터 액세스 계층"
+            DB_CONFIG[Database Config<br/>database_config.py]
+            DB_MANAGER[Database Manager]
+            CONNECTION_POOL[Connection Pool]
+        end
+
+        subgraph "데이터 모델 계층"
+            DATA_MODELS[Data Models<br/>data_models.py]
+            REASONING_DP[ReasoningDataPoint]
+            EVAL_RESULT[EvaluationResult]
+            CONSTANTS[System Constants]
+        end
+    end
+
+    subgraph "외부 시스템"
+        subgraph "데이터베이스"
+            ORACLE_DB[(Oracle Database)]
+            REASONING_TABLE[REASONING_DATA Table]
+            EVAL_TABLE[EVALUATION_RESULTS Table]
+            STATS_TABLE[DATASET_STATISTICS Table]
+        end
+
+        subgraph "외부 데이터 소스"
+            GSM8K[GSM8K Dataset]
+            ARC[ARC Dataset]
+            HELLASWAG[HellaSwag Dataset]
+            KOREAN_DS[Korean Datasets]
+            CUSTOM_API[Custom APIs]
+        end
+
+        subgraph "파일 시스템"
+            JSON_FILES[JSON Files]
+            CSV_FILES[CSV Files]
+            CONFIG_FILES[Configuration Files]
+        end
+
+        subgraph "LLM 모델들"
+            OPENAI[OpenAI GPT]
+            ANTHROPIC[Anthropic Claude]
+            LOCAL_MODEL[Local Models]
+            CUSTOM_LLM[Custom LLMs]
+        end
+    end
+
+    %% 연결 관계
+    MAIN --> COLLECTOR
+    MAIN --> SAMPLE_GEN
+    MAIN --> EXT_LOADER
+    MAIN --> EVALUATOR
+    MAIN --> CONFIG
+
+    CLI --> MAIN
+    CONFIG --> DB_CONFIG
+
+    COLLECTOR --> DB_MANAGER
+    SAMPLE_GEN --> COLLECTOR
+    EXT_LOADER --> COLLECTOR
+
+    EVALUATOR --> COLLECTOR
+    EVALUATOR --> DB_MANAGER
+    EVALUATOR --> METRICS
+    EVALUATOR --> VALIDATOR
+
+    MODEL_INTERFACE --> CUSTOM_MODELS
+    MODEL_INTERFACE --> API_MODELS
+    EVALUATOR --> MODEL_INTERFACE
+
+    DB_CONFIG --> CONNECTION_POOL
+    DB_MANAGER --> CONNECTION_POOL
+    CONNECTION_POOL --> ORACLE_DB
+
+    ORACLE_DB --> REASONING_TABLE
+    ORACLE_DB --> EVAL_TABLE
+    ORACLE_DB --> STATS_TABLE
+
+    DATA_MODELS --> REASONING_DP
+    DATA_MODELS --> EVAL_RESULT
+    DATA_MODELS --> CONSTANTS
+
+    COLLECTOR --> DATA_MODELS
+    EVALUATOR --> DATA_MODELS
+
+    EXT_LOADER --> GSM8K
+    EXT_LOADER --> ARC
+    EXT_LOADER --> HELLASWAG
+    EXT_LOADER --> KOREAN_DS
+    EXT_LOADER --> CUSTOM_API
+
+    COLLECTOR --> JSON_FILES
+    COLLECTOR --> CSV_FILES
+    CONFIG --> CONFIG_FILES
+
+    MODEL_INTERFACE --> OPENAI
+    MODEL_INTERFACE --> ANTHROPIC
+    MODEL_INTERFACE --> LOCAL_MODEL
+    MODEL_INTERFACE --> CUSTOM_LLM
+
+    %% 스타일링
+    classDef dataLayer fill:#e1f5fe
+    classDef businessLayer fill:#f3e5f5
+    classDef presentationLayer fill:#e8f5e8
+    classDef externalLayer fill:#fff3e0
+
+    class REASONING_DP,EVAL_RESULT,CONSTANTS,DATA_MODELS dataLayer
+    class COLLECTOR,SAMPLE_GEN,EXT_LOADER,EVALUATOR,METRICS,VALIDATOR,MODEL_INTERFACE businessLayer
+    class MAIN,CLI,CONFIG presentationLayer
+    class ORACLE_DB,GSM8K,ARC,HELLASWAG,KOREAN_DS,CUSTOM_API,JSON_FILES,CSV_FILES,OPENAI,ANTHROPIC,LOCAL_MODEL,CUSTOM_LLM externalLayer

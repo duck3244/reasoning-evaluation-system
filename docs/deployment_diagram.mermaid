@@ -1,0 +1,179 @@
+graph TB
+    subgraph "클라이언트 환경"
+        subgraph "개발자 워크스테이션"
+            DEV_MACHINE[개발자 머신<br/><<device>>]
+            PYTHON_ENV[Python 환경<br/><<execution environment>>]
+            IDE[IDE/Editor<br/><<software>>]
+            
+            DEV_MACHINE --> PYTHON_ENV
+            PYTHON_ENV --> IDE
+        end
+
+        subgraph "연구자 환경"
+            RESEARCH_MACHINE[연구용 머신<br/><<device>>]
+            JUPYTER[Jupyter Notebook<br/><<software>>]
+            ANALYSIS_TOOLS[분석 도구<br/><<software>>]
+            
+            RESEARCH_MACHINE --> JUPYTER
+            RESEARCH_MACHINE --> ANALYSIS_TOOLS
+        end
+    end
+
+    subgraph "애플리케이션 서버"
+        APP_SERVER[Application Server<br/><<device>>]
+        
+        subgraph "Python 런타임 환경"
+            PYTHON_RUNTIME[Python 3.8+<br/><<execution environment>>]
+            
+            subgraph "애플리케이션 컴포넌트"
+                MAIN_APP[main.py<br/><<artifact>>]
+                DATA_COLLECTOR[data_collector.py<br/><<artifact>>]
+                EVALUATOR[evaluation_system.py<br/><<artifact>>]
+                DB_MANAGER[database_config.py<br/><<artifact>>]
+                EXT_LOADER[external_data_loader.py<br/><<artifact>>]
+            end
+
+            subgraph "Python 패키지"
+                ORACLEDB[oracledb<br/><<library>>]
+                REQUESTS[requests<br/><<library>>]
+                DATASETS[datasets<br/><<library>>]
+                PANDAS[pandas<br/><<library>>]
+            end
+        end
+
+        subgraph "설정 파일"
+            CONFIG_JSON[db_config.json<br/><<configuration>>]
+            LOG_CONFIG[logging.conf<br/><<configuration>>]
+        end
+
+        APP_SERVER --> PYTHON_RUNTIME
+        PYTHON_RUNTIME --> MAIN_APP
+        PYTHON_RUNTIME --> DATA_COLLECTOR
+        PYTHON_RUNTIME --> EVALUATOR
+        PYTHON_RUNTIME --> DB_MANAGER
+        PYTHON_RUNTIME --> EXT_LOADER
+        PYTHON_RUNTIME --> ORACLEDB
+        PYTHON_RUNTIME --> REQUESTS
+        PYTHON_RUNTIME --> DATASETS
+        PYTHON_RUNTIME --> PANDAS
+        APP_SERVER --> CONFIG_JSON
+        APP_SERVER --> LOG_CONFIG
+    end
+
+    subgraph "데이터베이스 서버"
+        DB_SERVER[Database Server<br/><<device>>]
+        
+        subgraph "Oracle Database"
+            ORACLE_INSTANCE[Oracle 19c<br/><<database>>]
+            
+            subgraph "테이블스페이스"
+                REASONING_TS[REASONING_DATA<br/><<tablespace>>]
+                EVAL_TS[EVALUATION_RESULTS<br/><<tablespace>>]
+                STATS_TS[DATASET_STATISTICS<br/><<tablespace>>]
+            end
+
+            subgraph "데이터베이스 객체"
+                REASONING_TABLE[REASONING_DATA Table<br/><<table>>]
+                EVAL_TABLE[EVALUATION_RESULTS Table<br/><<table>>]
+                STATS_TABLE[DATASET_STATISTICS Table<br/><<table>>]
+                INDEXES[Indexes<br/><<index>>]
+                SEQUENCES[Sequences<br/><<sequence>>]
+            end
+        end
+
+        DB_SERVER --> ORACLE_INSTANCE
+        ORACLE_INSTANCE --> REASONING_TS
+        ORACLE_INSTANCE --> EVAL_TS
+        ORACLE_INSTANCE --> STATS_TS
+        REASONING_TS --> REASONING_TABLE
+        EVAL_TS --> EVAL_TABLE
+        STATS_TS --> STATS_TABLE
+        ORACLE_INSTANCE --> INDEXES
+        ORACLE_INSTANCE --> SEQUENCES
+    end
+
+    subgraph "파일 저장소"
+        FILE_SERVER[File Server<br/><<device>>]
+        
+        subgraph "데이터 파일"
+            JSON_STORAGE[JSON Files<br/><<file>>]
+            CSV_STORAGE[CSV Files<br/><<file>>]
+            BACKUP_STORAGE[Backup Files<br/><<file>>]
+        end
+
+        subgraph "로그 파일"
+            APP_LOGS[Application Logs<br/><<file>>]
+            ERROR_LOGS[Error Logs<br/><<file>>]
+            AUDIT_LOGS[Audit Logs<br/><<file>>]
+        end
+
+        FILE_SERVER --> JSON_STORAGE
+        FILE_SERVER --> CSV_STORAGE
+        FILE_SERVER --> BACKUP_STORAGE
+        FILE_SERVER --> APP_LOGS
+        FILE_SERVER --> ERROR_LOGS
+        FILE_SERVER --> AUDIT_LOGS
+    end
+
+    subgraph "외부 서비스"
+        subgraph "LLM API 서비스"
+            OPENAI_API[OpenAI API<br/><<web service>>]
+            ANTHROPIC_API[Anthropic API<br/><<web service>>]
+            HUGGINGFACE_API[Hugging Face API<br/><<web service>>]
+        end
+
+        subgraph "데이터셋 저장소"
+            HUGGINGFACE_DATASETS[Hugging Face Datasets<br/><<repository>>]
+            GITHUB_DATASETS[GitHub Repositories<br/><<repository>>]
+            CUSTOM_APIs[Custom Data APIs<br/><<web service>>]
+        end
+    end
+
+    subgraph "네트워크"
+        INTERNET[Internet<br/><<network>>]
+        INTRANET[Corporate Network<br/><<network>>]
+        VPN[VPN Connection<br/><<communication path>>]
+    end
+
+    %% 연결 관계
+    DEV_MACHINE -.->|SSH/HTTPS| APP_SERVER
+    RESEARCH_MACHINE -.->|SSH/HTTPS| APP_SERVER
+    
+    APP_SERVER -.->|Oracle Net| DB_SERVER
+    APP_SERVER -.->|NFS/SMB| FILE_SERVER
+    
+    APP_SERVER -.->|HTTPS| OPENAI_API
+    APP_SERVER -.->|HTTPS| ANTHROPIC_API
+    APP_SERVER -.->|HTTPS| HUGGINGFACE_API
+    APP_SERVER -.->|HTTPS| HUGGINGFACE_DATASETS
+    APP_SERVER -.->|HTTPS| GITHUB_DATASETS
+    APP_SERVER -.->|HTTPS| CUSTOM_APIs
+
+    DEV_MACHINE -.->|Network| INTRANET
+    RESEARCH_MACHINE -.->|Network| INTRANET
+    APP_SERVER -.->|Network| INTRANET
+    DB_SERVER -.->|Network| INTRANET
+    FILE_SERVER -.->|Network| INTRANET
+
+    INTRANET -.->|Gateway| INTERNET
+    INTERNET -.-> OPENAI_API
+    INTERNET -.-> ANTHROPIC_API
+    INTERNET -.-> HUGGINGFACE_API
+    INTERNET -.-> HUGGINGFACE_DATASETS
+    INTERNET -.-> GITHUB_DATASETS
+    INTERNET -.-> CUSTOM_APIs
+
+    %% 스타일링
+    classDef device fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef software fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
+    classDef database fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    classDef file fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+    classDef network fill:#ffebee,stroke:#f44336,stroke-width:2px
+    classDef external fill:#fafafa,stroke:#616161,stroke-width:2px
+
+    class DEV_MACHINE,RESEARCH_MACHINE,APP_SERVER,DB_SERVER,FILE_SERVER device
+    class IDE,JUPYTER,ANALYSIS_TOOLS,MAIN_APP,DATA_COLLECTOR,EVALUATOR,DB_MANAGER,EXT_LOADER,ORACLEDB,REQUESTS,DATASETS,PANDAS software
+    class ORACLE_INSTANCE,REASONING_TABLE,EVAL_TABLE,STATS_TABLE,INDEXES,SEQUENCES database
+    class JSON_STORAGE,CSV_STORAGE,BACKUP_STORAGE,APP_LOGS,ERROR_LOGS,AUDIT_LOGS,CONFIG_JSON,LOG_CONFIG file
+    class INTERNET,INTRANET,VPN network
+    class OPENAI_API,ANTHROPIC_API,HUGGINGFACE_API,HUGGINGFACE_DATASETS,GITHUB_DATASETS,CUSTOM_APIs external
