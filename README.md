@@ -72,8 +72,6 @@ Oracle Database 12c+
 
 ### 2. 패키지 설치
 ```bash
-git clone https://github.com/your-repo/llm-reasoning-evaluation
-cd llm-reasoning-evaluation
 pip install -r requirements.txt
 ```
 
@@ -421,11 +419,4 @@ analyzer = LogAnalyzer('logs/application.log')
 summary = analyzer.generate_log_summary(hours=24)
 print(f"에러율: {summary['error_rate']:.2%}")
 ```
-
-## 🔄 버전 히스토리
-
-- **v1.0.0** (2024-01): 초기 릴리즈
-  - 기본 데이터 수집 및 평가 기능
-  - Oracle 데이터베이스 연동
-  - 성능 최적화 시스템
-  - 구조화된 로깅 시스템
+---
